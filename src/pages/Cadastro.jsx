@@ -259,7 +259,7 @@ export default function Cadastro() {
                 </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>
-                 <Monitor />
+                 {/* <Monitor /> */}
             </Grid>
              <Grid item xs={3} sm={6}>
                 {/* <div sx={{padding: '3px' }}>
@@ -328,8 +328,6 @@ export default function Cadastro() {
 //ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
 
 //PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
-
-//RETORNOS CRIAR MAIS UM MONITOR
 
 
 // DONE DONE DONE DONE BELLOW

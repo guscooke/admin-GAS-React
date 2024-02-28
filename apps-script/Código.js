@@ -321,14 +321,152 @@ function getSumOfPreviousMonth() {
   return sum;
 }
 
-function getPercentageMonth() {
-
-}
-
-function topClients() {
-
-}
-
+//////////////////////////////////////////////////////
+// Função para encontrar os cinco serviços mais feitos no mês atual
 function topServices() {
+  const range = sheet.getDataRange();
+  const values = range.getValues();
 
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
+  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+
+  const serviceCounts = {}; // Objeto para armazenar a contagem de cada serviço
+
+  // Itera sobre os dados para contar a ocorrência de cada serviço
+  for (let i = 1; i < values.length - 1; i++)
+  {
+    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
+    const services = values[i][1].split(','); // Supondo que os serviços estejam na segunda coluna e separados por vírgula
+
+    if (date >= startDate && date <= endDate)
+    {
+      services.forEach(service => {
+        service = service.trim(); // Remove espaços em branco em excesso
+        if (service !== '')
+        {
+          serviceCounts[service] = (serviceCounts[service] || 0) + 1; // Incrementa a contagem para este serviço
+        }
+      });
+    }
+  }
+
+  // Ordena os serviços com base em suas contagens
+  const sortedServices = Object.keys(serviceCounts).sort((a, b) => serviceCounts[b] - serviceCounts[a]);
+
+  // Retorna os cinco serviços mais feitos
+  return sortedServices.slice(0, 5);
 }
+
+// Função para encontrar os cinco clientes que mais aparecem no cadastro no mês atual
+function topClients() {
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
+  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+
+  const clientCounts = {}; // Objeto para armazenar a contagem de cada cliente
+
+  // Itera sobre os dados para contar a ocorrência de cada cliente
+  for (let i = 1; i < values.length - 1; i++)
+  {
+    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
+    const client = `${values[i][6]} ${values[i][7]}`.trim(); // Supondo que o nome e sobrenome do cliente estejam na sétima e oitava coluna
+
+    if (date >= startDate && date <= endDate)
+    {
+      if (client !== '')
+      {
+        clientCounts[client] = (clientCounts[client] || 0) + 1; // Incrementa a contagem para este cliente
+      }
+    }
+  }
+
+  // Ordena os clientes com base em suas contagens
+  const sortedClients = Object.keys(clientCounts).sort((a, b) => clientCounts[b] - clientCounts[a]);
+
+  // Retorna os cinco clientes que mais aparecem
+  return sortedClients.slice(0, 5);
+}
+
+////
+// Código no Google Apps Script
+
+// Função para buscar os cinco serviços mais feitos e os cinco clientes que mais aparecem no mês atual
+function getTopServicesAndClients() {
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
+  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+
+  const serviceCounts = {}; // Objeto para armazenar a contagem de cada serviço
+  const clientCounts = {}; // Objeto para armazenar a contagem de cada cliente
+  const specialistCounts = {}; // Objeto para armazenar a contagem de cada especialista
+
+  // Itera sobre os dados para contar a ocorrência de cada serviço, cliente e especialista
+  for (let i = 1; i < values.length - 1; i++)
+  {
+    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
+    const services = values[i][1].split(','); // Supondo que os serviços estejam na segunda coluna e separados por vírgula
+    const client = `${values[i][6]} ${values[i][7]}`.trim(); // Supondo que o nome e sobrenome do cliente estejam na sétima e oitava coluna
+    const specialists = values[i][2].split(','); // Supondo que os especialistas estejam na terceira coluna e separados por vírgula
+
+    if (date >= startDate && date <= endDate)
+    {
+      services.forEach(service => {
+        service = service.trim(); // Remove espaços em branco em excesso
+        if (service !== '')
+        {
+          serviceCounts[service] = (serviceCounts[service] || 0) + 1; // Incrementa a contagem para este serviço
+        }
+      });
+
+      if (client !== '')
+      {
+        clientCounts[client] = (clientCounts[client] || 0) + 1; // Incrementa a contagem para este cliente
+      }
+
+      specialists.forEach(specialist => {
+        specialist = specialist.trim(); // Remove espaços em branco em excesso
+        if (specialist !== '')
+        {
+          specialistCounts[specialist] = (specialistCounts[specialist] || 0) + 1; // Incrementa a contagem para este especialista
+        }
+      });
+    }
+  }
+
+  // Ordena os serviços com base em suas contagens
+  const sortedServices = Object.keys(serviceCounts).sort((a, b) => serviceCounts[b] - serviceCounts[a]);
+
+  // Ordena os clientes com base em suas contagens
+  const sortedClients = Object.keys(clientCounts).sort((a, b) => clientCounts[b] - clientCounts[a]);
+
+  // Ordena os especialistas com base em suas contagens
+  const sortedSpecialists = Object.keys(specialistCounts).sort((a, b) => specialistCounts[b] - specialistCounts[a]);
+
+  // Retorna os cinco principais serviços, clientes e especialistas
+  const topServices = sortedServices.slice(0, 5);
+  const topClients = sortedClients.slice(0, 5);
+  const topSpecialists = sortedSpecialists.slice(0, 5);
+
+  return {
+    topServices: topServices,
+    topClients: topClients,
+    topSpecialists: topSpecialists
+  };
+}
+

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import DisplayView from '../components/DisplayView';
 import Grid from '@mui/material/Grid';
 
-
 export default function Monitor() {
     const [sumOfValues, setSumOfValues] = useState(null);
     const [sumOfPreviousMonth, setSumOfPreviousMonth] = useState(null);
@@ -11,15 +10,15 @@ export default function Monitor() {
     const [isLoading, setIsLoading] = useState(false);
     const [currentMonthText, setCurrentMonthText] = useState('');
     const [previousMonth, setPreviousMonth] = useState('');
+    const [percentageDifference, setPercentageDifference] = useState(null);
+    const [topServices, setTopServices] = useState([]);
+    const [topClients, setTopClients] = useState([]);
+    const [topSpecialists, setTopSpecialists] = useState([]);
 
 
     const fetchSumOfValues = async () => {
-
-    
         try {
             setIsLoading(true);
-
-            // Chama a função do Google Apps Script para buscar o total dos valores
             const response = await google.script.run.withFailureHandler((error) => {
                 setError(error.message);
                 setIsLoading(false);
@@ -37,13 +36,10 @@ export default function Monitor() {
         }
     };
 
-      const fetchSumOfPreviousMonth = async () => {
-
-    
+    const fetchSumOfPreviousMonth = async () =>
+ {
         try {
             setIsLoading(true);
-
-            // Chama a função do Google Apps Script para buscar o total dos valores
             const response = await google.script.run.withFailureHandler((error) => {
                 setError(error.message);
                 setIsLoading(false);
@@ -60,62 +56,105 @@ export default function Monitor() {
             console.error("Error fetching sum of values:", error.message);
         }
     };
+
+    const fetchTopServicesAndClients = async () => {
+        try {
+            setIsLoading(true);
+            const response = await google.script.run.withFailureHandler((error) => {
+                setError(error.message);
+                setIsLoading(false);
+            }).withSuccessHandler((response) => {
+                setTopServices(response.topServices);
+                setTopClients(response.topClients);
+                setTopSpecialists(response.topSpecialists);
+                setIsLoading(false);
+            }).getTopServicesAndClients();
+
+            console.log("Top services and clients:", response);
+        } catch (error) {
+            setError(error.message);
+            setIsLoading(false);
+            console.error("Error fetching top services and clients:", error.message);
+        }
+    };
+
     useEffect(() => {
-        // Fetch sum of values when the component mounts
         fetchSumOfValues();
         fetchSumOfPreviousMonth();
+        fetchTopServicesAndClients();
     }, []);
 
-    // const currentMonth = new Date().getMonth() + 1; // Get current month
-    // console.log(currentMonth);
-        useEffect(() => {
-        // Set the current month text
+    useEffect(() => {
         const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         const currentMonth = new Date().getMonth();
-            setCurrentMonthText(months[currentMonth]);
-            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1; // Handle January (month index 0)
-            setPreviousMonth(months[previousMonth]);
+        setCurrentMonthText(months[currentMonth]);
+        const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        setPreviousMonth(months[previousMonth]);
 
-            
-        
-        // Log the current month for testing
-        console.log("Current month:", months[currentMonth]);
-    }, []);
+        if (sumOfValues !== null && sumOfPreviousMonth !== null) {
+            if (sumOfPreviousMonth !== 0) {
+                const difference = sumOfValues - sumOfPreviousMonth;
+                const percentageDifference = ((difference / sumOfPreviousMonth) * 100).toFixed(2);
+                setPercentageDifference(percentageDifference + '%');
+            } else {
+                setPercentageDifference('N/A');
+            }
+        }
+    }, [sumOfValues, sumOfPreviousMonth]);                       
+
 
     return (
         <div>
-            {/* Display sum of values */}
             {isLoading && <p>Loading...</p>}
-            {/* {error && <p>Error: {error}</p>}
-            {success && <p>Success: {success}</p>} */}
             {sumOfValues !== null && (
-                 <Grid container spacing={2}>
-                    <Grid item xs={6} lg={3} sx={{ marginRight: '10px' }}> {/* Add margin to create space */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12} lg={3}>
                         <DisplayView value={sumOfPreviousMonth} title={previousMonth} />
                     </Grid>
-                    <Grid item xs={6} lg={3} sx={{ marginRight: '10px' }}> {/* Add margin to create space */}
+                    <Grid item xs={12} lg={3}>
                         <DisplayView value={sumOfValues} title={currentMonthText} />
                     </Grid>
-                    <Grid item xs={6} lg={3}>
+                    <Grid item xs={12} lg={3}>
+                         <DisplayView value={percentageDifference} title='Percentual' />
 
-                        {/* TOP 3 SERVICES */}
+                        {/* <p>Percentage Difference: {percentageDifference}</p> */}
                     </Grid>
-                    <Grid item xs={6} lg={3}>
-                        {/* TOP 5 CLIENTES */}
+                    <Grid item xs={12} lg={3}>
+                        <h3>Top 5 Services:</h3>
+                        <ul>
+                            {topServices.map((service, index) => (
+                                <li key={index}>{service}</li>
+                            ))}
+                        </ul>
+                        <h3>Top 5 Clients:</h3>
+                        <ul>
+                            {topClients.map((client, index) => (
+                                <li key={index}>{client}</li>
+                            ))}
+                        </ul>
+                        <h3>Top Specialists:</h3>
+                        <ul>
+                            {topSpecialists.map((specialist, index) => (
+                                <li key={index}>{specialist}</li>
+                            ))}
+                        </ul>
                     </Grid>
                 </Grid>
             )}
         </div>
     );
 }
+
+
+
  
 // TO BE DONE
 // MES atual, falta somente inserir a (0,00) virgula;
-//TOP 5 SERVIÇOS
-//TOP 5 CLIENTES
 //RETORNO NUMEROS VISUALIZAR
-//ATUALIZAR
-// MUDAR AS CORES DAS BOLAS
+//ATUALIZAR - AUTOMATICO
+// MUDAR AS CORES DAS BOLAS/ CARD
 
 //DONE
 //MES ANTERIOR
+//TOP 5 SERVIÇOS
+//TOP 5 CLIENTES

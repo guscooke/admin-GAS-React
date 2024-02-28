@@ -14,7 +14,7 @@ function App() {
         <Navbar />
         <div className="content-container"> {/* Add a container for the content */}
           {/* <header className="App-header"> */}
-          {/* <Monitor /> */}
+          <Monitor />
           <Cadastro />
           <Agenda />
           {/* </header> */}
