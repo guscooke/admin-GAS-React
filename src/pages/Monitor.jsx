@@ -97,10 +97,11 @@ export default function Monitor() {
                         <DisplayView value={sumOfValues} title={currentMonthText} />
                     </Grid>
                     <Grid item xs={6} lg={3}>
-                        {/* Leave this grid item empty */}
+
+                        {/* TOP 3 SERVICES */}
                     </Grid>
                     <Grid item xs={6} lg={3}>
-                        {/* Leave this grid item empty */}
+                        {/* TOP 5 CLIENTES */}
                     </Grid>
                 </Grid>
             )}
@@ -112,7 +113,7 @@ export default function Monitor() {
 // MES atual, falta somente inserir a (0,00) virgula;
 //TOP 5 SERVIÇOS
 //TOP 5 CLIENTES
-//RETORNO VISUALIZAR
+//RETORNO NUMEROS VISUALIZAR
 //ATUALIZAR
 // MUDAR AS CORES DAS BOLAS
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box} from '@mui/material';
+import {Box, Icon} from '@mui/material';
 
 
 const DisplayView = ({ title, value }) => {
@@ -22,6 +22,8 @@ const DisplayView = ({ title, value }) => {
         >
             <h2>{title}</h2>
             <h1 style={{ margin: 0 }}>R$ {value}</h1> {/* Added inline style to remove default margin */}
+            {/* <p>here % comparativo</p>
+            <Icon></Icon> */}
         </Box>
 
     );
@@ -30,4 +32,6 @@ const DisplayView = ({ title, value }) => {
 export default DisplayView;
 
 // preciso melhorar a cor , talvez o formato e tb passar a cor de acordo com o mes
-//já que é um componente só.
+//já que é um componente só., podemos incluir icones e relações percentuais entre um mês e outro.
+//criar cor de acordo com o
+

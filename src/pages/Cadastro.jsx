@@ -259,16 +259,14 @@ export default function Cadastro() {
                 </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>
-                {/* <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0', alignContent:'center' }}> */}
-                    <Monitor />
-                {/* </Paper> */}
+                 <Monitor />
             </Grid>
-             <Grid item xs={3} sm={6} lg={12}>
+             <Grid item xs={3} sm={6}>
                 {/* <div sx={{padding: '3px' }}>
                 </div> */}
                 <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
                     <div style={{ textAlign: 'center', overflowX: 'auto' }}>
-                        <p>Últimos 5 Cadastros</p>
+                        <p>Últimos Cadastros</p>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'small' }}>
                             <thead>
                                 <tr>

@@ -7,26 +7,6 @@ function doGet() {
 }
 
 // HAVE TO INCLUDE DESCONTO + NOVO
-// function doInsertData(data) {
-//   // Check if data is valid
-//   if (isValidData(data))
-//   {
-//     const rowIndex = findRowIndex(data);
-//     if (rowIndex !== -1)
-//     {
-//       // Editing existing row
-//       const row = sheet.getRange(rowIndex + 1, 1, 1, dataList[0].length);
-//       row.setValues([[data.data, joinIfArray(data.categorias), joinIfArray(data.especialista), data.descricao, data.valor, joinIfArray(data.desconto), data.nome, data.sobrenome, data.novo]]);
-//     } else
-//     {
-//       // Adding new row
-//       sheet.appendRow([data.data, joinIfArray(data.categorias), joinIfArray(data.especialista), data.descricao, data.valor, joinIfArray(data.desconto), data.nome, data.sobrenome, data.novo]);
-//     }
-//     return ContentService.createTextOutput("Your message was successfully sent to the Google Sheet database!");
-//   }
-//   return ContentService.createTextOutput("Error: Invalid data provided.");
-// }
-
 function doInsertData(data) {
   try
   {
@@ -36,22 +16,20 @@ function doInsertData(data) {
       throw new Error("Invalid data provided.");
     }
 
-    // Format "valor" as a number
-    const valor = parseFloat(data.valor.replace(',', '.'));
-
     // Prepare row data
     const rowData = [
       data.data,
       joinIfArray(data.categorias),
       joinIfArray(data.especialista),
       data.descricao,
-      valor,
+      data.valor,
       joinIfArray(data.desconto),
       data.nome,
       data.sobrenome,
       data.novo
     ];
 
+    // Find the row index of existing data, if any
     const rowIndex = findRowIndex(data);
 
     if (rowIndex !== -1)
@@ -65,44 +43,61 @@ function doInsertData(data) {
       sheet.appendRow(rowData);
     }
 
-    return ContentService.createTextOutput("Data successfully updated in the Google Sheet.");
+    return "Your message was successfully sent to the Google Sheet database!";
   } catch (error)
   {
-    return ContentService.createTextOutput("Error: " + error.message);
+    return "Error: " + error.message;
   }
 }
 
-
-
-//FUNCTION TO JOIN THE ARRAY OF VALUES FROM UP ABOVE
-function joinIfArray(value) {
-  return Array.isArray(value) ? value.join(', ') : value;
+function joinIfArray(input, separator = ', ') {
+  return Array.isArray(input) ? input.join(separator) : input;
 }
 
 // function doInsertData(data) {
-//   // Check if data is valid
-//   if (isValidData(data))
+//   try
 //   {
+//     // Check if data is valid
+//     if (!isValidData(data))
+//     {
+//       throw new Error("Invalid data provided.");
+//     }
+
+//     // Format "valor" as a number
+//     const valor = parseFloat(data.valor.replace(',', '.'));
+
+//     // Prepare row data
+//     const rowData = [
+//       data.data,
+//       joinIfArray(data.categorias),
+//       joinIfArray(data.especialista),
+//       data.descricao,
+//       valor,
+//       joinIfArray(data.desconto),
+//       data.nome,
+//       data.sobrenome,
+//       data.novo
+//     ];
+
 //     const rowIndex = findRowIndex(data);
+
 //     if (rowIndex !== -1)
 //     {
 //       // Editing existing row
-//       const row = sheet.getRange(rowIndex + 1, 1, 1, dataList[0].length);
-//       // Format "valor" as a number
-//       const valor = parseFloat(data.valor.replace(',', '.'));
-//       row.setValues([[data.data, joinIfArray(data.categorias), joinIfArray(data.especialista), data.descricao, valor, data.nome, data.sobrenome]]);
+//       const row = sheet.getRange(rowIndex + 1, 1, 1, rowData.length);
+//       row.setValues([rowData]);
 //     } else
 //     {
 //       // Adding new row
-//       // Format "valor" as a number
-//       const valor = parseFloat(data.valor.replace(',', '.'));
-//       sheet.appendRow([data.data, joinIfArray(data.categorias), joinIfArray(data.especialista), data.descricao, valor, data.nome, data.sobrenome]);
+//       sheet.appendRow(rowData);
 //     }
-//     return ContentService.createTextOutput("Your message was successfully sent to the Google Sheet database!");
-//   }
-//   return ContentService.createTextOutput("Error: Invalid data provided.");
-// }
 
+//     return ContentService.createTextOutput("Data successfully updated in the Google Sheet.");
+//   } catch (error)
+//   {
+//     return ContentService.createTextOutput("Error: " + error.message);
+//   }
+// }
 
 //have to fix
 function doDeleteData(data) {
@@ -188,6 +183,8 @@ function formatTime(date) {
   return hours + ":" + minutes;
 }
 
+
+//NAO ESTOU USANDO
 function writeCalendarEventsToSheet() {
   var calendar = CalendarApp.getDefaultCalendar();
   var now = new Date();
@@ -226,6 +223,7 @@ function writeCalendarEventsToSheet() {
   return rowData;
 }
 
+//OK USANDO
 function getCalendarEvents() {
   var calendar = CalendarApp.getDefaultCalendar();
   var now = new Date();
@@ -321,4 +319,16 @@ function getSumOfPreviousMonth() {
 
   console.log("Sum of values for the previous month:", sum);
   return sum;
+}
+
+function getPercentageMonth() {
+
+}
+
+function topClients() {
+
+}
+
+function topServices() {
+
 }
