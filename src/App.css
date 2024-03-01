@@ -25,7 +25,7 @@
 }
 
 .App-link {
-  color: #61dafb;
+  color: #b1cac5;
 }
 
 .content-container {
@@ -39,4 +39,16 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.bg-card-previous {
+  color: #61dafb;
+}
+
+.bg-card-month {
+  color: gray;
+}
+
+.bg-card-percentage {
+  color: greenyellow;
 }

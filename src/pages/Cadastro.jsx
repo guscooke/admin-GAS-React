@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import Paper from '@mui/material/Paper';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Monitor from './Monitor';
+// import Monitor from './Monitor';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 
@@ -213,7 +213,7 @@ export default function Cadastro() {
                                     value={formData.novo.toString()} // Convert boolean to string
                                     onChange={handleRadioChange}
                                 >
-                                    <FormControlLabel value="true" control={<Radio />} label="Nova" />
+                                    <FormControlLabel value="true" control={<Radio />} label="Cliente Nova" />
                                     {/* <FormControlLabel value="false" control={<Radio />} label="Não Novo" /> */}
                                 </RadioGroup>
                             </Grid>
@@ -258,12 +258,8 @@ export default function Cadastro() {
                     </form>
                 </Paper>
             </Grid>
-            <Grid item xs={12} sm={6}>
-                 {/* <Monitor /> */}
-            </Grid>
-             <Grid item xs={3} sm={6}>
-                {/* <div sx={{padding: '3px' }}>
-                </div> */}
+           
+             <Grid item xs={12} sm={6}>
                 <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
                     <div style={{ textAlign: 'center', overflowX: 'auto' }}>
                         <p>Últimos Cadastros</p>
@@ -326,9 +322,9 @@ export default function Cadastro() {
 
 // TO BE DONE
 //ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
-
+// SEPARAR O STYLE EM LINHA VER SE JOGO EM OUTRO LUGAR
 //PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
-
+// BOTOES DELETAR E EDITAR NAO FUNCIONAM DE FATO
 
 // DONE DONE DONE DONE BELLOW
 //CRIAR MAIS 2 CAMPOS CLIENTE: NOVO RADIO BUTTON E

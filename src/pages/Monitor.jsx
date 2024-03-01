@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DisplayView from '../components/DisplayView';
 import Grid from '@mui/material/Grid';
+import DisplayViewB from '../components/DViewB';
 
 export default function Monitor() {
     const [sumOfValues, setSumOfValues] = useState(null);
@@ -94,7 +95,7 @@ export default function Monitor() {
         if (sumOfValues !== null && sumOfPreviousMonth !== null) {
             if (sumOfPreviousMonth !== 0) {
                 const difference = sumOfValues - sumOfPreviousMonth;
-                const percentageDifference = ((difference / sumOfPreviousMonth) * 100).toFixed(2);
+                const percentageDifference = ((difference / sumOfPreviousMonth) * 10).toFixed(2);
                 setPercentageDifference(percentageDifference + '%');
             } else {
                 setPercentageDifference('N/A');
@@ -108,37 +109,32 @@ export default function Monitor() {
             {isLoading && <p>Loading...</p>}
             {sumOfValues !== null && (
                 <Grid container spacing={2}>
+                        <Grid item xs={6} lg={3}>
+                            <DisplayView value={sumOfPreviousMonth} title={previousMonth} color={'#0f333b'} />
+                        </Grid>
+                        <Grid item xs={6} lg={3}>
+                            <DisplayView value={sumOfValues} title={currentMonthText} color={'#338496'} />
+                        </Grid>
+                        <Grid item xs={6} lg={3}>
+                            <DisplayView elevation={3} value={percentageDifference} title='' color={'#338496'} />
+                        </Grid>
+                        <Grid item xs={6} lg={3}>
+                            <DisplayView elevation={3} value='43' title='Retorno' color={'#338496'} />
+                        </Grid>
+                        {/* <Grid item xs={6} lg={3}>
+                            <DisplayView elevation={3} value={topSpecialists} title='Destaque' color={'#338496'} />
+                        </Grid> */}
+                        <Grid item xs={6} lg={3}>
+                            <DisplayView elevation={3} value='12' title='XPTO' color={'#338496'} />
+                        </Grid>
+                   
                     <Grid item xs={12} lg={3}>
-                        <DisplayView value={sumOfPreviousMonth} title={previousMonth} />
+                         <DisplayViewB values={topClients} title="Top Clientes" color={'#338496'} />
                     </Grid>
-                    <Grid item xs={12} lg={3}>
-                        <DisplayView value={sumOfValues} title={currentMonthText} />
+                     <Grid item xs={12} lg={3}>
+                         <DisplayViewB values={topServices} title="Top Serviços" color={'#338496'} />
                     </Grid>
-                    <Grid item xs={12} lg={3}>
-                         <DisplayView value={percentageDifference} title='Percentual' />
-
-                        {/* <p>Percentage Difference: {percentageDifference}</p> */}
-                    </Grid>
-                    <Grid item xs={12} lg={3}>
-                        <h3>Top 5 Services:</h3>
-                        <ul>
-                            {topServices.map((service, index) => (
-                                <li key={index}>{service}</li>
-                            ))}
-                        </ul>
-                        <h3>Top 5 Clients:</h3>
-                        <ul>
-                            {topClients.map((client, index) => (
-                                <li key={index}>{client}</li>
-                            ))}
-                        </ul>
-                        <h3>Top Specialists:</h3>
-                        <ul>
-                            {topSpecialists.map((specialist, index) => (
-                                <li key={index}>{specialist}</li>
-                            ))}
-                        </ul>
-                    </Grid>
+               
                 </Grid>
             )}
         </div>

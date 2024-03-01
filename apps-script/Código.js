@@ -184,7 +184,7 @@ function formatTime(date) {
 }
 
 
-//NAO ESTOU USANDO
+// ESTOU USANDO
 function writeCalendarEventsToSheet() {
   var calendar = CalendarApp.getDefaultCalendar();
   var now = new Date();
@@ -469,4 +469,98 @@ function getTopServicesAndClients() {
     topSpecialists: topSpecialists
   };
 }
+
+// function getCadastro() {
+//   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+//   var dataRange = sheet.getDataRange();
+//   var dataValues = dataRange.getValues();
+//   var events = [];
+
+//   // Iterating over rows and pushing data to 'events' array
+//   for (var i = 0; i < dataValues.length; i++)
+//   {
+//     events.push(dataValues[i]);
+//   }
+//   // Returning the array of events
+//   return events;
+// }
+
+// function getCadastro() {
+//   try
+//   {
+//     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+//     var dataRange = sheet.getDataRange();
+//     var dataValues = dataRange.getValues();
+//     var events = [];
+
+//     // Iterate over rows and push data to 'events' array
+//     for (var i = 1; i < dataValues.length; i++)
+//     {
+//       var row = dataValues[i];
+//       var eventData = {
+//         data: row[0] instanceof Date ? row[0] : null, // Check if it's a date object
+//         serviço: row[1] || '', // Ensure a default value if empty
+//         profissional: row[2] || '',
+//         descrição: row[3] || '',
+//         valor: typeof row[4] === 'number' ? row[4] : null, // Check if it's a number
+//         desconto: typeof row[5] === 'number' ? row[5] : null,
+//         nome: row[6] || '',
+//         sobrenome: row[7] || '',
+//         novo: typeof row[8] === 'boolean' ? row[8] : false // Check if it's a boolean
+//       };
+
+//       events.push(eventData);
+//     }
+
+//     // Returning the array of events
+//     return events;
+//   } catch (error)
+//   {
+//     throw new Error("An error occurred while fetching events: " + error);
+//   }
+// }
+
+// Define global variables
+// const spreadsheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1fiLpqJzUmID05-5_PJg2b3RMULnVbau1uVEOg2GI4Yg/edit#gid=0");
+// const logSheet = spreadsheet.getSheetByName("log-serv");
+// const agendaSheet = spreadsheet.getSheetByName("agenda");
+
+function getCadastro() {
+  try
+  {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const dataRange = sheet.getDataRange();
+    const dataValues = dataRange.getValues();
+    const events = [];
+
+    // Iterate over rows and push data to 'events' array
+    for (let i = 1; i < dataValues.length; i++)
+    {
+      const row = dataValues[i];
+      const desconto = typeof row[5] === 'string' ? row[5].split(',') : null;
+      const eventData = {
+        data: row[0] instanceof Date ? row[0].toISOString() : null,
+        servico: row[1] || '',
+        profissional: row[2] || '',
+        descricao: row[3] || '',
+        valor: typeof row[4] === 'number' ? row[4] : null,
+        desconto: desconto,
+        nome: row[6] || '',
+        sobrenome: row[7] || '',
+        novo: typeof row[8] === 'boolean' ? row[8] : false
+      };
+
+      events.push(eventData);
+    }
+
+    // Returning the array of events as a JSON string
+    return JSON.stringify(events);
+  } catch (error)
+  {
+    throw new Error("An error occurred while fetching events: " + error);
+  }
+}
+
+
+
 

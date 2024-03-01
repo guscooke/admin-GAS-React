@@ -4,6 +4,7 @@ import Navbar from './layout/Navbar';
 import Agenda from './components/Agenda'
 import Monitor from './pages/Monitor'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CadastroView from './pages/CadastroView';
 
 const theme = createTheme();
 
@@ -16,7 +17,8 @@ function App() {
           {/* <header className="App-header"> */}
           <Monitor />
           <Cadastro />
-          <Agenda />
+          <CadastroView />
+          {/* <Agenda /> */}
           {/* </header> */}
         </div>
       </div>
@@ -27,3 +29,5 @@ function App() {
 export default App;
 
 
+// CRIAR ROTAS E PAGINAS DISTINTAS
+//CRIAR AREA DE LOG IN

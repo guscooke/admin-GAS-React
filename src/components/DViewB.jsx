@@ -1,7 +1,6 @@
+import { Box, Divider } from '@mui/material';
 
-import { Box, Icon } from '@mui/material';
-
-const DisplayView = ({ title, values, color }) => {
+const DisplayViewB = ({ title, values, color }) => {
   return (
     <Box
       sx={{
@@ -10,10 +9,11 @@ const DisplayView = ({ title, values, color }) => {
         justifyContent: 'flex-start', // Align items from top to bottom
         alignItems: 'flex-start', // Align items from right to left
         width: 180,
-        borderRadius: '5%',
-        bgcolor: 'yellowgreen',
-        color: color,
-        padding: '16px',
+        borderRadius: '2%',
+        bgcolor: color,
+        color: '#fff', // Alterado para branco
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)', // Adding box shadow
+        padding: '20px',
         position: 'relative',
         '&:hover': {
           bgcolor: 'primary.dark',
@@ -21,9 +21,10 @@ const DisplayView = ({ title, values, color }) => {
       }}
     >
       <h3>{title}</h3>
+      <Divider sx={{ width: '100%', backgroundColor: '#fff' }} /> {/* Linha dividindo os parágrafos */}
       <ul>
         {values.map((value, index) => (
-          <li key={index}>{value}</li>
+          <p key={index}>{value}</p>
         ))}
       </ul>
       <Box
@@ -35,10 +36,10 @@ const DisplayView = ({ title, values, color }) => {
           textAlign: 'right',
         }}
       >
-        <Icon></Icon>
+        {/* <Icon>$</Icon> */}
       </Box>
     </Box>
   );
 };
 
-export default DisplayView;
+export default DisplayViewB;
