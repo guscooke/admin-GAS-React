@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import Paper from '@mui/material/Paper';
 import FormControlLabel from '@mui/material/FormControlLabel';
-// import Monitor from './Monitor';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 
@@ -14,12 +13,13 @@ export default function Cadastro() {
         data: '',
         categorias: [],
         especialista: [],
-        desconto:[],
+        desconto: [],
         descricao: '',
-        valor: '', // No initial value
+        valor: '',
         nome: '',
         sobrenome: '',
-        novo: false
+        novo: false,
+        pagamento: '', // Add pagamento field
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -40,17 +40,22 @@ export default function Cadastro() {
         const categoriasArray = newValue ? [...newValue] : [];
         setFormData({ ...formData, categorias: categoriasArray });
     };
-    
+
     const handleSpecialistaChange = (event, newValue) => {
         const especialistaArray = newValue ? [...newValue] : [];
         setFormData({ ...formData, especialista: especialistaArray });
     };
 
-     const handleDiscountChange = (event, newValue) => {
+    const handleDiscountChange = (event, newValue) => {
         const discountArray = newValue ? [...newValue] : [];
         setFormData({ ...formData, desconto: discountArray });
-     };
-    
+    };
+
+   const handlePaymentChange = (event, newValue) => {
+    setFormData({ ...formData, pagamento: newValue });
+   };
+
+
     const handleRadioChange = (event) => {
         setFormData({
             ...formData,
@@ -58,33 +63,30 @@ export default function Cadastro() {
         });
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         if (isLoading) return;
         setIsLoading(true);
-        setError();
-        setSuccess();
-        setDataList([...dataList, { ...formData }]);
-        setFormData(initialFormData);      
-            try {
+        setError('');
+        setSuccess('');
+
+        try {
             // Call Google Apps Script function to insert data
-            const server = google.script.run.withFailureHandler((error) => {
-                setError(error.message);
-                setIsLoading(false);
-                updateData();
-            });
-            const call = server.withSuccessHandler(() => {
+            const server = google.script.run.withSuccessHandler(() => {
                 setSuccess("Your message was successfully sent to the Google Sheet database!");
                 setIsLoading(false);
+                setDataList([...dataList, { ...formData }]);
+                setFormData(initialFormData);
+            }).withFailureHandler((error) => {
+                setError(error.message);
+                setIsLoading(false);
             });
-                call.doInsertData(formData);
-                // call.getSumOfValues();
+            await server.doInsertData(formData);
         } catch (error) {
             setError(error.message);
             setIsLoading(false);
-        }        
-    }
-    
+        }
+    };
 
     const handleEdit = (index) => {
         setFormData(dataList[index]); // Set the form data to edit
@@ -120,6 +122,7 @@ export default function Cadastro() {
     ];
 
     const discount = [
+        'N/A',
         'Presente',
         'promocional',
         'pacote',
@@ -129,6 +132,11 @@ export default function Cadastro() {
         '20%',
         '30%',
         '50%'
+    ];
+
+    const payment = [
+        'cartão',
+        'Dinheiro'
     ];
 
     return (
@@ -239,19 +247,33 @@ export default function Cadastro() {
                             onChange={handleInputChange}
                             required // Make valor required
                         />
-                             {/* <Grid item xs={6}> */}
-                                <Autocomplete
-                                    multiple
-                                    options={discount}
-                                    renderInput={(params) => <TextField name="desconto" {...params} label="Desconto" variant="outlined" />}
-                                    value={formData.desconto || []}
-                                    onChange={handleDiscountChange}
-                                    isOptionEqualToValue={(option, value) => option === value}
-                                    fullWidth
-                                    margin="normal"
-                                    required
-                                />
-                            {/* </Grid> */}
+                        <Grid>
+                            <Autocomplete
+                            options={payment}
+                            renderInput={(params) => <TextField name="pagamento" {...params} label="Método" variant="outlined" />}
+                            value={formData.pagamento || []}
+                            onChange={handlePaymentChange}
+                            isOptionEqualToValue={(option, value) => option === value}
+                            fullWidth
+                            margin="normal"
+                                required // Make payment required
+                            />
+                        </Grid>
+                        
+                     
+                        <Grid>
+                            <Autocomplete
+                            multiple
+                            options={discount}
+                            renderInput={(params) => <TextField name="desconto" {...params} label="Desconto" variant="outlined" />}
+                            value={formData.desconto || []}
+                            onChange={handleDiscountChange}
+                            isOptionEqualToValue={(option, value) => option === value}
+                            fullWidth
+                            margin="normal"
+                            required         
+                            />
+                            </Grid>
                         <Button type="submit" variant="contained" color="primary">
                             Enviar
                         </Button>
@@ -269,12 +291,13 @@ export default function Cadastro() {
                                     <th>Data</th>
                                     <th>Serviço</th>
                                     <th>Profissional</th>
-                                    <th>Descrição</th>
+                                    {/* <th>Descrição</th> */}
                                     <th>Valor</th>
+                                    <th>Pagamento</th>
                                     <th>Desconto</th>
                                     <th>Nome</th>
                                     <th>Sobrenome</th>
-                                    <th>Novo</th>
+                                    <th>Nova</th>
                                   
                                     <th>Actions</th>
                                 </tr>
@@ -293,8 +316,11 @@ export default function Cadastro() {
                                                 <span key={index} style={{ marginRight: '5px' }}>{especialista + ','}</span>
                                             ))}
                                         </td>
-                                        <td>{data.descricao}</td>
+                                        {/* <td>{data.descricao}</td> */}
                                         <td>{data.valor}</td>
+                                          <td>
+                                            {data.pagamento}
+                                        </td>
                                             <td>
                                             {data.desconto.map((desconto, index) => (
                                                 <span key={index} style={{ marginRight: '5px' }}>{desconto + ','}</span>
@@ -322,9 +348,9 @@ export default function Cadastro() {
 
 // TO BE DONE
 //ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
-// SEPARAR O STYLE EM LINHA VER SE JOGO EM OUTRO LUGAR
 //PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
 // BOTOES DELETAR E EDITAR NAO FUNCIONAM DE FATO
+//CAMPO OPÇÃO PAGAMENTO - DINHEIRO/CARTAO
 
 // DONE DONE DONE DONE BELLOW
 //CRIAR MAIS 2 CAMPOS CLIENTE: NOVO RADIO BUTTON E

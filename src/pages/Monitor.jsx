@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import DisplayView from '../components/DisplayView';
 import Grid from '@mui/material/Grid';
 import DisplayViewB from '../components/DViewB';
+import CurrencyExchangeOutlinedIcon from '@mui/icons-material/CurrencyExchangeOutlined';
+import LoopOutlinedIcon from '@mui/icons-material/LoopOutlined';
+import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 
 export default function Monitor() {
     const [sumOfValues, setSumOfValues] = useState(null);
@@ -110,29 +114,29 @@ export default function Monitor() {
             {sumOfValues !== null && (
                 <Grid container spacing={2}>
                         <Grid item xs={6} lg={3}>
-                            <DisplayView value={sumOfPreviousMonth} title={previousMonth} color={'#0f333b'} />
+                            <DisplayView value={sumOfPreviousMonth} title={previousMonth} color={'#0f333b'} icon={<CurrencyExchangeOutlinedIcon/>} />
                         </Grid>
                         <Grid item xs={6} lg={3}>
-                            <DisplayView value={sumOfValues} title={currentMonthText} color={'#338496'} />
+                            <DisplayView value={sumOfValues} title={currentMonthText} color={'#338496'} icon={<CurrencyExchangeOutlinedIcon/>} />
                         </Grid>
                         <Grid item xs={6} lg={3}>
-                            <DisplayView elevation={3} value={percentageDifference} title='' color={'#338496'} />
+                            <DisplayView elevation={3} value={percentageDifference} title='' color={'#0f333b'} icon={<QueryStatsOutlinedIcon/>} />
                         </Grid>
                         <Grid item xs={6} lg={3}>
-                            <DisplayView elevation={3} value='43' title='Retorno' color={'#338496'} />
+                            <DisplayView elevation={3} value='43' title='Retorno' color={'#338496'} icon={<LoopOutlinedIcon/>} />
                         </Grid>
                         {/* <Grid item xs={6} lg={3}>
-                            <DisplayView elevation={3} value={topSpecialists} title='Destaque' color={'#338496'} />
+                            <DisplayView elevation={3} value={topSpecialists} title='Destaque' color={'#338496'} icon={''}/>
                         </Grid> */}
                         <Grid item xs={6} lg={3}>
-                            <DisplayView elevation={3} value='12' title='XPTO' color={'#338496'} />
+                            <DisplayView elevation={3} value='12' title='XPTO' color={'#338496'} icon={''} />
                         </Grid>
                    
                     <Grid item xs={12} lg={3}>
-                         <DisplayViewB values={topClients} title="Top Clientes" color={'#338496'} />
+                         <DisplayViewB values={topClients} title="Top Clientes" color={'#338496'} icon={<EmojiEventsOutlinedIcon/>} />
                     </Grid>
                      <Grid item xs={12} lg={3}>
-                         <DisplayViewB values={topServices} title="Top Serviços" color={'#338496'} />
+                         <DisplayViewB values={topServices} title="Top Serviços" color={'#338496'} icon={<EmojiEventsOutlinedIcon/>} />
                     </Grid>
                
                 </Grid>
@@ -146,11 +150,6 @@ export default function Monitor() {
  
 // TO BE DONE
 // MES atual, falta somente inserir a (0,00) virgula;
-//RETORNO NUMEROS VISUALIZAR
-//ATUALIZAR - AUTOMATICO
-// MUDAR AS CORES DAS BOLAS/ CARD
+//LOGICA DO RETORNO DO SERVIÇO
 
-//DONE
-//MES ANTERIOR
-//TOP 5 SERVIÇOS
-//TOP 5 CLIENTES
+

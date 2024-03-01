@@ -5,7 +5,8 @@ import Agenda from './components/Agenda'
 import Monitor from './pages/Monitor'
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CadastroView from './pages/CadastroView';
-
+import CadastroContainer from './pages/CadastroCntr';
+import { DataProvider } from './contexts/DataContext';
 const theme = createTheme();
 
 function App() {
@@ -14,12 +15,12 @@ function App() {
       <div className="App">
         <Navbar />
         <div className="content-container"> {/* Add a container for the content */}
-          {/* <header className="App-header"> */}
-          <Monitor />
-          <Cadastro />
-          <CadastroView />
+          <DataProvider>
+            <Monitor />
+            <Cadastro />
+            <CadastroView />
+          </DataProvider>
           {/* <Agenda /> */}
-          {/* </header> */}
         </div>
       </div>
     </ThemeProvider>
@@ -27,6 +28,7 @@ function App() {
 }
 
 export default App;
+
 
 
 // CRIAR ROTAS E PAGINAS DISTINTAS

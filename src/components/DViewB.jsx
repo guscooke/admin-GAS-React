@@ -1,6 +1,6 @@
 import { Box, Divider } from '@mui/material';
 
-const DisplayViewB = ({ title, values, color }) => {
+const DisplayViewB = ({ title, values, color, icon }) => {
   return (
     <Box
       sx={{
@@ -29,14 +29,17 @@ const DisplayViewB = ({ title, values, color }) => {
       </ul>
       <Box
         sx={{
-          position: 'absolute',
-          bottom: '0',
-          left: '0',
-          width: '100%',
-          textAlign: 'right',
-        }}
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '50px',
+            height: '50px',
+          }}
       >
-        {/* <Icon>$</Icon> */}
+        {icon}
       </Box>
     </Box>
   );

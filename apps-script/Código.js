@@ -3,20 +3,18 @@ const sheet = sheets.getSheetByName("log-serv");
 const sheetAgenda = sheets.getSheetByName("agenda");
 
 function doGet() {
-  return HtmlService.createTemplateFromFile("index").evaluate().addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);;
+  return HtmlService.createTemplateFromFile("index").evaluate().addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// HAVE TO INCLUDE DESCONTO + NOVO
 function doInsertData(data) {
   try
   {
-    // Check if data is valid
     if (!isValidData(data))
     {
       throw new Error("Invalid data provided.");
     }
 
-    // Prepare row data
+    const pagamento = data.pagamento === 'cartao' ? 'Cartão' : 'Dinheiro'; // Transforma o valor do botão de rádio em 'Cartão' ou 'Dinheiro'
     const rowData = [
       data.data,
       joinIfArray(data.categorias),
@@ -26,20 +24,18 @@ function doInsertData(data) {
       joinIfArray(data.desconto),
       data.nome,
       data.sobrenome,
-      data.novo
+      data.novo,
+      pagamento // Armazena o valor transformado em 'Cartão' ou 'Dinheiro'
     ];
 
-    // Find the row index of existing data, if any
     const rowIndex = findRowIndex(data);
 
     if (rowIndex !== -1)
     {
-      // Editing existing row
       const row = sheet.getRange(rowIndex + 1, 1, 1, rowData.length);
       row.setValues([rowData]);
     } else
     {
-      // Adding new row
       sheet.appendRow(rowData);
     }
 
@@ -50,68 +46,18 @@ function doInsertData(data) {
   }
 }
 
-function joinIfArray(input, separator = ', ') {
-  return Array.isArray(input) ? input.join(separator) : input;
-}
-
-// function doInsertData(data) {
-//   try
-//   {
-//     // Check if data is valid
-//     if (!isValidData(data))
-//     {
-//       throw new Error("Invalid data provided.");
-//     }
-
-//     // Format "valor" as a number
-//     const valor = parseFloat(data.valor.replace(',', '.'));
-
-//     // Prepare row data
-//     const rowData = [
-//       data.data,
-//       joinIfArray(data.categorias),
-//       joinIfArray(data.especialista),
-//       data.descricao,
-//       valor,
-//       joinIfArray(data.desconto),
-//       data.nome,
-//       data.sobrenome,
-//       data.novo
-//     ];
-
-//     const rowIndex = findRowIndex(data);
-
-//     if (rowIndex !== -1)
-//     {
-//       // Editing existing row
-//       const row = sheet.getRange(rowIndex + 1, 1, 1, rowData.length);
-//       row.setValues([rowData]);
-//     } else
-//     {
-//       // Adding new row
-//       sheet.appendRow(rowData);
-//     }
-
-//     return ContentService.createTextOutput("Data successfully updated in the Google Sheet.");
-//   } catch (error)
-//   {
-//     return ContentService.createTextOutput("Error: " + error.message);
-//   }
-// }
-
-//have to fix
 function doDeleteData(data) {
   const rowIndex = findRowIndex(data);
   if (rowIndex !== -1)
   {
     sheet.deleteRow(rowIndex + 1);
-    return ContentService.createTextOutput(`Row ${rowIndex + 1} was successfully deleted from the Google Sheet database!`);
+    return "Row " + (rowIndex + 1) + " was successfully deleted from the Google Sheet database!";
   }
-  return ContentService.createTextOutput("Error: Row not found.");
+  return "Error: Row not found.";
 }
 
 function isValidData(data) {
-  return data && data.data && data.nome && data.sobrenome && data.descricao && data.valor && data.categorias && data.especialista;
+  return data && data.data && data.nome && data.sobrenome && data.descricao && data.valor && data.categorias && data.especialista && data.pagamento !== undefined; // Ensure pagamento is not undefined
 }
 
 function findRowIndex(data) {
@@ -127,7 +73,8 @@ function findRowIndex(data) {
       rowData[3] === data.descricao &&
       rowData[4] === data.valor &&
       rowData[5] === data.nome &&
-      rowData[6] === data.sobrenome
+      rowData[6] === data.sobrenome &&
+      rowData[9] === data.pagamento // Check for pagamento equality
     )
     {
       return i;
@@ -136,38 +83,9 @@ function findRowIndex(data) {
   return -1; // Row not found
 }
 
-
-
-//REVER////REVER////
-// function doGet(e) {
-//   // Create a template from the index.html file
-//   var template = HtmlService.createTemplateFromFile("index");
-
-//   // Parse the request parameter to determine the requested route
-//   var route = e.parameter.route || 'home'; // Default to 'home' if no route is specified
-
-//   // Serve different HTML content based on the requested route
-//   switch (route)
-//   {
-//     case 'home':
-//       // Render the Cadastro component for the "/" route
-//       template.data = { pageTitle: 'Cadastro' };
-//       break;
-//     case 'agenda':
-//       // Render the Agenda component for the "/agenda" route
-//       template.data = { pageTitle: 'Agenda' };
-//       break;
-//     default:
-//       // If an invalid route is requested, default to serving the Cadastro component
-//       template.data = { pageTitle: 'Cadastro' };
-//   }
-
-//   // Evaluate the template and return it as the response
-//   return template.evaluate()
-//     .setTitle('Studio Resources')
-//     .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-// }
-
+function joinIfArray(input, separator = ', ') {
+  return Array.isArray(input) ? input.join(separator) : input;
+}
 
 function formatDate(date) {
   var day = ("0" + date.getDate()).slice(-2);
@@ -176,15 +94,12 @@ function formatDate(date) {
   return day + "/" + month + "/" + year;
 }
 
-// Function to format the time to display in the format "hh:mm"
 function formatTime(date) {
   var hours = ("0" + date.getHours()).slice(-2);
   var minutes = ("0" + date.getMinutes()).slice(-2);
   return hours + ":" + minutes;
 }
 
-
-// ESTOU USANDO
 function writeCalendarEventsToSheet() {
   var calendar = CalendarApp.getDefaultCalendar();
   var now = new Date();
@@ -193,13 +108,9 @@ function writeCalendarEventsToSheet() {
 
   var events = calendar.getEvents(now, end);
 
-  // Limpa os dados existentes na planilha
   sheetAgenda.clear();
-
-  // Define os cabeçalhos na primeira linha da planilha
   sheetAgenda.getRange('A1:E1').setValues([["Data", "Evento", "Inicio", "Termino"]]);
 
-  // Adiciona os dados dos eventos na planilha
   var rowData = [];
   events.forEach(function (event) {
     var date = formatDate(event.getStartTime());
@@ -208,7 +119,6 @@ function writeCalendarEventsToSheet() {
     rowData.push([date, event.getTitle(), startTime, endTime, event.getDescription()]);
   });
 
-  // Escreve os dados na planilha a partir da segunda linha
   if (rowData.length > 0)
   {
     sheetAgenda.getRange(sheetAgenda.getLastRow() + 1, 1, rowData.length, rowData[0].length).setValues(rowData);
@@ -217,13 +127,10 @@ function writeCalendarEventsToSheet() {
   {
     console.log('Nenhum evento encontrado para escrever na planilha.');
   }
-  console.log(rowData)
 
-  // Return the events data to be used in the client-side function
   return rowData;
 }
 
-//OK USANDO
 function getCalendarEvents() {
   var calendar = CalendarApp.getDefaultCalendar();
   var now = new Date();
@@ -241,7 +148,6 @@ function getCalendarEvents() {
   return eventData;
 }
 
-
 function getSumOfValues() {
   const range = sheet.getDataRange();
   const values = range.getValues();
@@ -251,12 +157,12 @@ function getSumOfValues() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
-  const startDate = new Date(currentYear, currentMonth, 1); // First day of the current month
-  const endDate = new Date(currentYear, currentMonth + 1, 0); // Last day of the current month
+  const startDate = new Date(currentYear, currentMonth, 1);
+  const endDate = new Date(currentYear, currentMonth + 1, 0);
 
   for (let i = 1; i < values.length - 1; i++)
   {
-    const date = new Date(values[i][0]); // Assuming date is in the first column
+    const date = new Date(values[i][0]);
     const valor = parseFloat(values[i][4].toString().replace(',', '.'));
 
     if (!isNaN(valor) && date >= startDate && date <= endDate)
@@ -278,7 +184,6 @@ function getSumOfValues() {
   return sum;
 }
 
-// 
 function getSumOfPreviousMonth() {
   const range = sheet.getDataRange();
   const values = range.getValues();
@@ -288,16 +193,15 @@ function getSumOfPreviousMonth() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
-  // Calcula o mês anterior
   const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
   const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-  const startDate = new Date(previousYear, previousMonth, 1); // Primeiro dia do mês anterior
-  const endDate = new Date(currentYear, currentMonth, 0); // Último dia do mês anterior
+  const startDate = new Date(previousYear, previousMonth, 1);
+  const endDate = new Date(currentYear, currentMonth, 0);
 
   for (let i = 1; i < values.length - 1; i++)
   {
-    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
+    const date = new Date(values[i][0]);
     const valor = parseFloat(values[i][4].toString().replace(',', '.'));
 
     if (!isNaN(valor) && date >= startDate && date <= endDate)
@@ -311,18 +215,14 @@ function getSumOfPreviousMonth() {
   const lastRowValor = parseFloat(lastRow[4].toString().replace(',', '.'));
 
   if (lastRow[0] && !isNaN(lastRowValor) && lastRowDate >= startDate && lastRowDate <= endDate)
-
-    if (lastRow[0] && !isNaN(lastRowValor) && lastRowDate >= startDate && lastRowDate <= endDate)
-    {
-      sum += lastRowValor;
-    }
+  {
+    sum += lastRowValor;
+  }
 
   console.log("Sum of values for the previous month:", sum);
   return sum;
 }
 
-//////////////////////////////////////////////////////
-// Função para encontrar os cinco serviços mais feitos no mês atual
 function topServices() {
   const range = sheet.getDataRange();
   const values = range.getValues();
@@ -331,37 +231,32 @@ function topServices() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
-  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
-  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+  const startDate = new Date(currentYear, currentMonth, 1);
+  const endDate = new Date(currentYear, currentMonth + 1, 0);
 
-  const serviceCounts = {}; // Objeto para armazenar a contagem de cada serviço
+  const serviceCounts = {};
 
-  // Itera sobre os dados para contar a ocorrência de cada serviço
   for (let i = 1; i < values.length - 1; i++)
   {
-    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
-    const services = values[i][1].split(','); // Supondo que os serviços estejam na segunda coluna e separados por vírgula
+    const date = new Date(values[i][0]);
+    const services = values[i][1].split(',');
 
     if (date >= startDate && date <= endDate)
     {
       services.forEach(service => {
-        service = service.trim(); // Remove espaços em branco em excesso
+        service = service.trim();
         if (service !== '')
         {
-          serviceCounts[service] = (serviceCounts[service] || 0) + 1; // Incrementa a contagem para este serviço
+          serviceCounts[service] = (serviceCounts[service] || 0) + 1;
         }
       });
     }
   }
 
-  // Ordena os serviços com base em suas contagens
   const sortedServices = Object.keys(serviceCounts).sort((a, b) => serviceCounts[b] - serviceCounts[a]);
-
-  // Retorna os cinco serviços mais feitos
   return sortedServices.slice(0, 5);
 }
 
-// Função para encontrar os cinco clientes que mais aparecem no cadastro no mês atual
 function topClients() {
   const range = sheet.getDataRange();
   const values = range.getValues();
@@ -370,37 +265,29 @@ function topClients() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
-  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
-  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+  const startDate = new Date(currentYear, currentMonth, 1);
+  const endDate = new Date(currentYear, currentMonth + 1, 0);
 
-  const clientCounts = {}; // Objeto para armazenar a contagem de cada cliente
+  const clientCounts = {};
 
-  // Itera sobre os dados para contar a ocorrência de cada cliente
   for (let i = 1; i < values.length - 1; i++)
   {
-    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
-    const client = `${values[i][6]} ${values[i][7]}`.trim(); // Supondo que o nome e sobrenome do cliente estejam na sétima e oitava coluna
+    const date = new Date(values[i][0]);
+    const client = `${values[i][6]} ${values[i][7]}`.trim();
 
     if (date >= startDate && date <= endDate)
     {
       if (client !== '')
       {
-        clientCounts[client] = (clientCounts[client] || 0) + 1; // Incrementa a contagem para este cliente
+        clientCounts[client] = (clientCounts[client] || 0) + 1;
       }
     }
   }
 
-  // Ordena os clientes com base em suas contagens
   const sortedClients = Object.keys(clientCounts).sort((a, b) => clientCounts[b] - clientCounts[a]);
-
-  // Retorna os cinco clientes que mais aparecem
   return sortedClients.slice(0, 5);
 }
 
-////
-// Código no Google Apps Script
-
-// Função para buscar os cinco serviços mais feitos e os cinco clientes que mais aparecem no mês atual
 function getTopServicesAndClients() {
   const range = sheet.getDataRange();
   const values = range.getValues();
@@ -409,121 +296,46 @@ function getTopServicesAndClients() {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
-  const startDate = new Date(currentYear, currentMonth, 1); // Primeiro dia do mês atual
-  const endDate = new Date(currentYear, currentMonth + 1, 0); // Último dia do mês atual
+  const startDate = new Date(currentYear, currentMonth, 1);
+  const endDate = new Date(currentYear, currentMonth + 1, 0);
 
-  const serviceCounts = {}; // Objeto para armazenar a contagem de cada serviço
-  const clientCounts = {}; // Objeto para armazenar a contagem de cada cliente
-  const specialistCounts = {}; // Objeto para armazenar a contagem de cada especialista
+  const serviceCounts = {};
+  const clientCounts = {};
 
-  // Itera sobre os dados para contar a ocorrência de cada serviço, cliente e especialista
   for (let i = 1; i < values.length - 1; i++)
   {
-    const date = new Date(values[i][0]); // Supondo que a data esteja na primeira coluna
-    const services = values[i][1].split(','); // Supondo que os serviços estejam na segunda coluna e separados por vírgula
-    const client = `${values[i][6]} ${values[i][7]}`.trim(); // Supondo que o nome e sobrenome do cliente estejam na sétima e oitava coluna
-    const specialists = values[i][2].split(','); // Supondo que os especialistas estejam na terceira coluna e separados por vírgula
+    const date = new Date(values[i][0]);
+    const services = values[i][1].split(',');
+    const client = `${values[i][6]} ${values[i][7]}`.trim();
 
     if (date >= startDate && date <= endDate)
     {
       services.forEach(service => {
-        service = service.trim(); // Remove espaços em branco em excesso
+        service = service.trim();
         if (service !== '')
         {
-          serviceCounts[service] = (serviceCounts[service] || 0) + 1; // Incrementa a contagem para este serviço
+          serviceCounts[service] = (serviceCounts[service] || 0) + 1;
         }
       });
 
       if (client !== '')
       {
-        clientCounts[client] = (clientCounts[client] || 0) + 1; // Incrementa a contagem para este cliente
+        clientCounts[client] = (clientCounts[client] || 0) + 1;
       }
-
-      specialists.forEach(specialist => {
-        specialist = specialist.trim(); // Remove espaços em branco em excesso
-        if (specialist !== '')
-        {
-          specialistCounts[specialist] = (specialistCounts[specialist] || 0) + 1; // Incrementa a contagem para este especialista
-        }
-      });
     }
   }
 
-  // Ordena os serviços com base em suas contagens
   const sortedServices = Object.keys(serviceCounts).sort((a, b) => serviceCounts[b] - serviceCounts[a]);
-
-  // Ordena os clientes com base em suas contagens
   const sortedClients = Object.keys(clientCounts).sort((a, b) => clientCounts[b] - clientCounts[a]);
 
-  // Ordena os especialistas com base em suas contagens
-  const sortedSpecialists = Object.keys(specialistCounts).sort((a, b) => specialistCounts[b] - specialistCounts[a]);
-
-  // Retorna os cinco principais serviços, clientes e especialistas
   const topServices = sortedServices.slice(0, 5);
   const topClients = sortedClients.slice(0, 5);
-  const topSpecialists = sortedSpecialists.slice(0, 5);
 
   return {
     topServices: topServices,
-    topClients: topClients,
-    topSpecialists: topSpecialists
+    topClients: topClients
   };
 }
-
-// function getCadastro() {
-//   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-//   var dataRange = sheet.getDataRange();
-//   var dataValues = dataRange.getValues();
-//   var events = [];
-
-//   // Iterating over rows and pushing data to 'events' array
-//   for (var i = 0; i < dataValues.length; i++)
-//   {
-//     events.push(dataValues[i]);
-//   }
-//   // Returning the array of events
-//   return events;
-// }
-
-// function getCadastro() {
-//   try
-//   {
-//     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-//     var dataRange = sheet.getDataRange();
-//     var dataValues = dataRange.getValues();
-//     var events = [];
-
-//     // Iterate over rows and push data to 'events' array
-//     for (var i = 1; i < dataValues.length; i++)
-//     {
-//       var row = dataValues[i];
-//       var eventData = {
-//         data: row[0] instanceof Date ? row[0] : null, // Check if it's a date object
-//         serviço: row[1] || '', // Ensure a default value if empty
-//         profissional: row[2] || '',
-//         descrição: row[3] || '',
-//         valor: typeof row[4] === 'number' ? row[4] : null, // Check if it's a number
-//         desconto: typeof row[5] === 'number' ? row[5] : null,
-//         nome: row[6] || '',
-//         sobrenome: row[7] || '',
-//         novo: typeof row[8] === 'boolean' ? row[8] : false // Check if it's a boolean
-//       };
-
-//       events.push(eventData);
-//     }
-
-//     // Returning the array of events
-//     return events;
-//   } catch (error)
-//   {
-//     throw new Error("An error occurred while fetching events: " + error);
-//   }
-// }
-
-// Define global variables
-// const spreadsheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1fiLpqJzUmID05-5_PJg2b3RMULnVbau1uVEOg2GI4Yg/edit#gid=0");
-// const logSheet = spreadsheet.getSheetByName("log-serv");
-// const agendaSheet = spreadsheet.getSheetByName("agenda");
 
 function getCadastro() {
   try
@@ -533,7 +345,6 @@ function getCadastro() {
     const dataValues = dataRange.getValues();
     const events = [];
 
-    // Iterate over rows and push data to 'events' array
     for (let i = 1; i < dataValues.length; i++)
     {
       const row = dataValues[i];
@@ -547,19 +358,20 @@ function getCadastro() {
         desconto: desconto,
         nome: row[6] || '',
         sobrenome: row[7] || '',
-        novo: typeof row[8] === 'boolean' ? row[8] : false
+        novo: typeof row[8] === 'boolean' ? row[8] : false,
+        pagamento: row[9] || '' // Include the new pagamento field
       };
 
       events.push(eventData);
     }
 
-    // Returning the array of events as a JSON string
     return JSON.stringify(events);
   } catch (error)
   {
     throw new Error("An error occurred while fetching events: " + error);
   }
 }
+
 
 
 

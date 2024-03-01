@@ -1,7 +1,6 @@
 import { Grid, Icon, Box } from '@mui/material';
-import CurrencyExchangeOutlinedIcon from '@mui/icons-material/CurrencyExchangeOutlined';
 
-const DisplayView = ({ title, value, color }) => {
+const DisplayView = ({ title, value, color, icon }) => {
   return (
     <Grid item sx={{padding:'1%'}} xs={6} lg={8}>
       <Box
@@ -11,6 +10,7 @@ const DisplayView = ({ title, value, color }) => {
           justifyContent: 'center', // Align items from top to bottom
           alignItems: 'center', // Align items from right to left
           width: '100%',
+          height:'70%',
           borderRadius: '2%',
           bgcolor: color,
           color: 'secondary.contrastText', // Change text color to contrastText
@@ -23,17 +23,20 @@ const DisplayView = ({ title, value, color }) => {
         }}
       >
         <h2 style={{ marginTop:50 , fontSize: '3rem' }}>{value}</h2>
-        <p style={{ margin: 0, fontSize: '0.8rem' }}>{title}</p>
+        <p style={{fontWeight: 'bold', color:'yellowgreen', margin: 0, fontSize: '1,2 rem' }}>{title}</p>
         <Box
           sx={{
             position: 'absolute',
-            bottom: '0',
-            left: '0',
-            width: '100%',
-            textAlign: 'right',
+            top: 0,
+            left: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '50px',
+            height: '50px',
           }}
         >
-          <CurrencyExchangeOutlinedIcon/>
+          {icon}
           {/* <p style={{ margin: 5 }}>{percentage}%</p> */}
         </Box>
       </Box>

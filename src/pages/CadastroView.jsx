@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField } from '@mui/material';
+import { CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button } from '@mui/material';
 
 const CadastroView = () => {
   const [events, setEvents] = useState([]);
@@ -7,10 +7,17 @@ const CadastroView = () => {
   const [filter, setFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 15;
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    applyFiltersAndPagination();
+  }, [events, currentPage, selectedMonth, filter]);
 
   const fetchEvents = () => {
     setIsLoading(true);
@@ -19,7 +26,6 @@ const CadastroView = () => {
         .withSuccessHandler((fetchedEventsJson) => {
           const fetchedEvents = JSON.parse(fetchedEventsJson);
           setEvents(fetchedEvents);
-          setFilteredEvents(fetchedEvents); // Set filtered events as well
           setIsLoading(false);
         })
         .withFailureHandler((err) => {
@@ -27,7 +33,7 @@ const CadastroView = () => {
           setError("Failed to fetch events. Please try again later.");
           setIsLoading(false);
         })
-        .getCadastro(); // Call getCadastro function
+        .getCadastro();
     } catch (err) {
       console.error("An error occurred while fetching events:", err);
       setError("An error occurred while fetching events.");
@@ -35,21 +41,45 @@ const CadastroView = () => {
     }
   };
 
-  const handleFilterChange = (e) => {
-    const value = e.target.value.toLowerCase();
-    setFilter(value);
+  const applyFiltersAndPagination = () => {
+    let filtered = [...events];
 
-    if (!value) {
-      setFilteredEvents(events); // Reset filtered events if filter is empty
-      return;
+    if (selectedMonth !== null) {
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.data);
+        return eventDate.getMonth() === selectedMonth;
+      });
     }
 
-    const filtered = events.filter(event =>
-      event.nome.toLowerCase().includes(value) || // Assuming event name is the property to filter
-      event.descricao.toLowerCase().includes(value) // Add more properties as needed for filtering
-    );
+    if (filter.trim() !== '') {
+      const filterLowerCase = filter.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.nome.toLowerCase().includes(filterLowerCase) ||
+          event.descricao.toLowerCase().includes(filterLowerCase) ||
+          event.profissional.toLowerCase().includes(filterLowerCase) ||
+           event.servico.toLowerCase().includes(filterLowerCase)
 
-    setFilteredEvents(filtered);
+      );
+    }
+
+    filtered.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+    const indexOfLastEvent = currentPage * eventsPerPage;
+    const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+    const currentEvents = filtered.slice(indexOfFirstEvent, indexOfLastEvent);
+
+    setFilteredEvents(currentEvents);
+  };
+
+  const handleFilterChange = (e) => {
+    const { value } = e.target;
+    setFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
+    setCurrentPage(1);
   };
 
   return (
@@ -60,43 +90,51 @@ const CadastroView = () => {
         variant="outlined"
         fullWidth
         margin="normal"
+        value={filter}
         onChange={handleFilterChange}
       />
+      <Button onClick={() => handleMonthChange(0)}>Month 1</Button>
+      <Button onClick={() => handleMonthChange(1)}>Month 2</Button>
+
       {isLoading ? (
         <CircularProgress />
       ) : (
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Data</TableCell>
-                <TableCell>Serviço</TableCell>
-                <TableCell>Profissional</TableCell>
-                <TableCell>Descrição</TableCell>
-                <TableCell>Valor</TableCell>
-                <TableCell>Desconto</TableCell>
-                <TableCell>Nome</TableCell>
-                <TableCell>Sobrenome</TableCell>
-                <TableCell>Novo</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredEvents.map((event, index) => (
-                <TableRow key={index}>
-                  <TableCell>{event.data}</TableCell>
-                  <TableCell>{event.servico}</TableCell>
-                  <TableCell>{event.profissional}</TableCell>
-                  <TableCell>{event.descricao}</TableCell>
-                  <TableCell>{event.valor}</TableCell>
-                  <TableCell>{event.desconto}</TableCell>
-                  <TableCell>{event.nome}</TableCell>
-                  <TableCell>{event.sobrenome}</TableCell>
-                  <TableCell>{event.novo.toString()}</TableCell>
+        <>
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Data</TableCell>
+                  <TableCell>Serviço</TableCell>
+                  <TableCell>Profissional</TableCell>
+                  <TableCell>Descrição</TableCell>
+                  <TableCell>Valor</TableCell>
+                  <TableCell>Pagamento</TableCell>
+                  <TableCell>Desconto</TableCell>
+                  <TableCell>Nome</TableCell>
+                  <TableCell>Sobrenome</TableCell>
+                  <TableCell>Novo</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {filteredEvents.map((event, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>{event.servico}</TableCell>
+                    <TableCell>{event.profissional}</TableCell>
+                    <TableCell>{event.descricao}</TableCell>
+                    <TableCell>{event.valor}</TableCell>
+                    <TableCell>{event.pagamento}</TableCell>
+                    <TableCell>{event.desconto}</TableCell>
+                    <TableCell>{event.nome}</TableCell>
+                    <TableCell>{event.sobrenome}</TableCell>
+                    <TableCell>{event.novo.toString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
       {error && <div>Error: {error}</div>}
     </div>
@@ -106,4 +144,3 @@ const CadastroView = () => {
 export default CadastroView;
 
 
-//precisamos ter um tipo de filtro para o mes e mostrar 30/50 por pagina 
