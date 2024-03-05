@@ -58,7 +58,6 @@ const CadastroView = () => {
           event.descricao.toLowerCase().includes(filterLowerCase) ||
           event.profissional.toLowerCase().includes(filterLowerCase) ||
            event.servico.toLowerCase().includes(filterLowerCase)
-
       );
     }
 
@@ -93,8 +92,8 @@ const CadastroView = () => {
         value={filter}
         onChange={handleFilterChange}
       />
-      <Button onClick={() => handleMonthChange(0)}>Month 1</Button>
-      <Button onClick={() => handleMonthChange(1)}>Month 2</Button>
+      <Button onClick={() => handleMonthChange(0)}>Back</Button>
+      <Button onClick={() => handleMonthChange(1)}>FWD </Button>
 
       {isLoading ? (
         <CircularProgress />
@@ -105,30 +104,31 @@ const CadastroView = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Data</TableCell>
+                  <TableCell>Nome</TableCell>
+                  <TableCell>Sobrenome</TableCell>
+                  <TableCell>Novo</TableCell>
                   <TableCell>Serviço</TableCell>
                   <TableCell>Profissional</TableCell>
                   <TableCell>Descrição</TableCell>
                   <TableCell>Valor</TableCell>
                   <TableCell>Pagamento</TableCell>
                   <TableCell>Desconto</TableCell>
-                  <TableCell>Nome</TableCell>
-                  <TableCell>Sobrenome</TableCell>
-                  <TableCell>Novo</TableCell>
+                  
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredEvents.map((event, index) => (
                   <TableRow key={index}>
                     <TableCell>{new Date(event.data).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>{event.nome}</TableCell>
+                    <TableCell>{event.sobrenome}</TableCell>
+                    <TableCell>{event.novo.toString()}</TableCell>
                     <TableCell>{event.servico}</TableCell>
                     <TableCell>{event.profissional}</TableCell>
                     <TableCell>{event.descricao}</TableCell>
                     <TableCell>{event.valor}</TableCell>
                     <TableCell>{event.pagamento}</TableCell>
                     <TableCell>{event.desconto}</TableCell>
-                    <TableCell>{event.nome}</TableCell>
-                    <TableCell>{event.sobrenome}</TableCell>
-                    <TableCell>{event.novo.toString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -143,4 +143,5 @@ const CadastroView = () => {
 
 export default CadastroView;
 
+// O PROBELMA AQUI ESTA NA PAGINAÇÃO E NOS BOTOES O MES Q ELE VOLTA É JAN E FEV
 

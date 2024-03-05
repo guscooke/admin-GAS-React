@@ -1,10 +1,13 @@
 const sheets = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1fiLpqJzUmID05-5_PJg2b3RMULnVbau1uVEOg2GI4Yg/edit#gid=0");
 const sheet = sheets.getSheetByName("log-serv");
 const sheetAgenda = sheets.getSheetByName("agenda");
+const sheetCliente = sheets.getSheetByName("cliente");
+
 
 function doGet() {
   return HtmlService.createTemplateFromFile("index").evaluate().addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
+
 
 function doInsertData(data) {
   try
@@ -13,10 +16,12 @@ function doInsertData(data) {
     {
       throw new Error("Invalid data provided.");
     }
+    // Format the date
+    const formattedDate = Utilities.formatDate(new Date(data.data), Session.getScriptTimeZone(), "dd/MM/yyyy");
 
     const pagamento = data.pagamento === 'cartao' ? 'Cartão' : 'Dinheiro'; // Transforma o valor do botão de rádio em 'Cartão' ou 'Dinheiro'
     const rowData = [
-      data.data,
+      formattedDate, // Use the formatted date here
       joinIfArray(data.categorias),
       joinIfArray(data.especialista),
       data.descricao,
@@ -45,6 +50,31 @@ function doInsertData(data) {
     return "Error: " + error.message;
   }
 }
+
+
+function insertNewClient(clientData) {
+  try
+  {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("clientes");
+    const formattedDate = Utilities.formatDate(new Date(clientData.birthday), Session.getScriptTimeZone(), "dd/MM/yyyy");
+
+
+    // Append the client data to the sheet
+    sheet.appendRow([
+      clientData.nome,
+      clientData.sobrenome,
+      clientData.telefone,
+      clientData.email,
+      formattedDate
+    ]);
+
+    return "New client added successfully.";
+  } catch (error)
+  {
+    return "Error: " + error.message;
+  }
+}
+
 
 function doDeleteData(data) {
   const rowIndex = findRowIndex(data);
@@ -85,13 +115,6 @@ function findRowIndex(data) {
 
 function joinIfArray(input, separator = ', ') {
   return Array.isArray(input) ? input.join(separator) : input;
-}
-
-function formatDate(date) {
-  var day = ("0" + date.getDate()).slice(-2);
-  var month = ("0" + (date.getMonth() + 1)).slice(-2);
-  var year = date.getFullYear();
-  return day + "/" + month + "/" + year;
 }
 
 function formatTime(date) {
@@ -230,6 +253,7 @@ function topServices() {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+  // const currentWeek = currentWeek.getWeek
 
   const startDate = new Date(currentYear, currentMonth, 1);
   const endDate = new Date(currentYear, currentMonth + 1, 0);
@@ -371,6 +395,49 @@ function getCadastro() {
     throw new Error("An error occurred while fetching events: " + error);
   }
 }
+
+function checkUpcomingBirthdays() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("cliente"); // Nome da planilha onde os dados de cadastro estão armazenados
+  const today = new Date(); // Data de hoje
+  const thisMonth = today.getMonth(); // Mês atual
+
+  const dataRange = sheet.getDataRange();
+  const values = dataRange.getValues();
+
+  // Iterar sobre os dados dos clientes
+  for (let i = 1; i < values.length; i++)
+  {
+    const rowData = values[i];
+    const birthday = new Date(rowData[4]); // Supondo que a data de aniversário esteja na quinta coluna (índice 4)
+
+    // Verificar se o aniversário está neste mês
+    if (birthday.getMonth() === thisMonth)
+    {
+      // Aniversário encontrado para este mês, faça algo com essa informação
+      const name = rowData[0]; // Supondo que o nome do cliente esteja na primeira coluna (índice 0)
+      const formattedBirthday = Utilities.formatDate(birthday, Session.getScriptTimeZone(), "dd/MM/yyyy"); // Formatar a data de aniversário
+
+      // Por exemplo, você pode enviar um e-mail ou gravar em outra planilha para monitoramento
+      Logger.log(`Aniversário de ${name} em ${formattedBirthday}`);
+    }
+  }
+}
+
+
+// getlashReturn(){
+//   // PEGAR O NUMERO DE CLIENTES QUE PRECISAM RETORNAR
+//   // DOIS TIPOS CÍLIOS E MICRO
+//   //MICRO SÃO 30 DIAS
+//   //CILIOS SÃO 12
+
+// }
+
+
+
+
+
+
+
 
 
 

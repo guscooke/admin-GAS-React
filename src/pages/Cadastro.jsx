@@ -1,4 +1,13 @@
-import React, { useState } from 'react';
+// TO BE DONE
+//PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
+// BOTOES DELETAR E EDITAR NAO FUNCIONAM DE FATO
+
+// DONE DONE DONE DONE BELLOW
+//CRIAR MAIS 2 CAMPOS CLIENTE: NOVO RADIO BUTTON E
+//PRESENTE, PROMOCIONAL, 10%, 5%,
+//CAMPO OPÇÃO PAGAMENTO - DINHEIRO/CARTAO
+//ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
+import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -7,6 +16,11 @@ import Paper from '@mui/material/Paper';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 export default function Cadastro() {
     const initialFormData = {
@@ -19,20 +33,35 @@ export default function Cadastro() {
         nome: '',
         sobrenome: '',
         novo: false,
-        pagamento: '', // Add pagamento field
+        pagamento: '',
+    };
+
+    const initialAdditionalFormData = {
+        telefone: '',
+        email: '',
+        dataNascimento: '',
     };
 
     const [formData, setFormData] = useState(initialFormData);
+    const [additionalFormData, setAdditionalFormData] = useState(initialAdditionalFormData);
     const [dataList, setDataList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState();
-    const [success, setSuccess] = useState();
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [isNewClient, setIsNewClient] = useState(false);
+
+    useEffect(() => {
+        const storedDataList = localStorage.getItem('dataList');
+        if (storedDataList) {
+            setDataList(JSON.parse(storedDataList));
+        }
+    }, []);
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData(prevFormData => ({
             ...prevFormData,
-            [name]: value, // Update the corresponding field in the form data
+            [name]: value,
         }));
     };
 
@@ -51,16 +80,63 @@ export default function Cadastro() {
         setFormData({ ...formData, desconto: discountArray });
     };
 
-   const handlePaymentChange = (event, newValue) => {
-    setFormData({ ...formData, pagamento: newValue });
-   };
-
+        const handlePaymentChange = (event, newValue) => {
+        setFormData({ ...formData, pagamento: newValue });
+    };
 
     const handleRadioChange = (event) => {
+        const isClientNew = event.target.value === 'true';
         setFormData({
             ...formData,
-            novo: event.target.value === 'true' // Convert string to boolean
+            novo: isClientNew
         });
+        if (isClientNew) {
+            setIsNewClient(true);
+        }
+    };
+
+    const handleAdditionalInputChange = (event) => {
+        const { name, value } = event.target;
+        setAdditionalFormData(prevData => ({
+            ...prevData,
+            [name]: value
+        }));
+    };
+
+  const handleClientSubmit = async () => {
+    if (!isNewClient || isLoading) return;
+
+    try {
+        const clientData = {
+            nome: formData.nome,
+            sobrenome: formData.sobrenome,
+            telefone: additionalFormData.telefone,
+            email: additionalFormData.email,
+            dataNascimento: additionalFormData.dataNascimento
+        };
+
+        const server = google.script.run.withSuccessHandler(() => {
+            setSuccess("Your message was successfully sent to the 'cliente' spreadsheet!");
+            setIsLoading(false);
+            setIsNewClient(false);
+            setAdditionalFormData(initialAdditionalFormData);
+        }).withFailureHandler((error) => {
+            setError(error.message);
+            setIsLoading(false);
+        });
+
+        setIsLoading(true);
+        await server.insertNewClient(clientData);
+    } catch (error) {
+        setError(error.message);
+        setIsLoading(false);
+    }
+};
+
+
+    const formatDate = (date) => {
+        const [year, month, day] = date.split('-');
+        return `${day}/${month}/${year.slice(-2)}`;
     };
 
     const handleSubmit = async (event) => {
@@ -71,17 +147,19 @@ export default function Cadastro() {
         setSuccess('');
 
         try {
-            // Call Google Apps Script function to insert data
             const server = google.script.run.withSuccessHandler(() => {
                 setSuccess("Your message was successfully sent to the Google Sheet database!");
                 setIsLoading(false);
-                setDataList([...dataList, { ...formData }]);
+                const newDataList = [...dataList, { ...formData }];
+                setDataList(newDataList);
+                localStorage.setItem('dataList', JSON.stringify(newDataList));
                 setFormData(initialFormData);
             }).withFailureHandler((error) => {
                 setError(error.message);
                 setIsLoading(false);
             });
             await server.doInsertData(formData);
+            // await server.insertNewClient({ nome: formData.nome, sobrenome: formData.sobrenome, ...additionalFormData });
         } catch (error) {
             setError(error.message);
             setIsLoading(false);
@@ -89,13 +167,14 @@ export default function Cadastro() {
     };
 
     const handleEdit = (index) => {
-        setFormData(dataList[index]); // Set the form data to edit
+        setFormData(dataList[index]);
     };
 
     const handleDelete = async (index) => {
         const newDataList = [...dataList];
         newDataList.splice(index, 1);
         setDataList(newDataList);
+        localStorage.setItem('dataList', JSON.stringify(newDataList));
 
         try {
             await google.script.run.doDeleteData(dataList[index]);
@@ -106,13 +185,15 @@ export default function Cadastro() {
     };
 
     const categories = [
-        'Design',
-        'Fio a Fio',
-        'Híbrido',
-        'Volume Brasileiro',
+        'Design de Sobrancelhas',
+        'Cílios Fio a Fio',
+        'Cílios Híbrido',
+        'Cílios Volume Brasileiro',
         'Micro Labial',
         'Micro Sobrancelha',
-        'Microagulhamento'
+        'Microagulhamento',
+        'Manutenção Extensão',
+        'Retoque Micro'
     ];
 
     const specialists = [
@@ -202,27 +283,26 @@ export default function Cadastro() {
                                 <Autocomplete
                                     multiple
                                     options={categories}
-                                    renderInput={(params) => <TextField name="categorias" {...params} label="Serviço" variant="outlined"  />}
+                                    renderInput={(params) => <TextField name="categorias" {...params} label="Serviço" variant="outlined" />}
                                     value={formData.categorias || []}
                                     onChange={handleCategoriaChange}
                                     isOptionEqualToValue={(option, value) => option === value}
                                     fullWidth
                                     margin="normal"
-                                    required // Make categorias required
+                                    required
                                 />
                             </Grid>
                         </Grid>
-                         <Grid container spacing={2}>
-                       
+                        <Grid container spacing={2}>
                             <Grid item xs={6}>
-                                 <RadioGroup
+                                <RadioGroup
                                     aria-label="novo"
                                     name="novo"
-                                    value={formData.novo.toString()} // Convert boolean to string
+                                    value={formData.novo.toString()}
                                     onChange={handleRadioChange}
                                 >
                                     <FormControlLabel value="true" control={<Radio />} label="Cliente Nova" />
-                                    {/* <FormControlLabel value="false" control={<Radio />} label="Não Novo" /> */}
+                                    <FormControlLabel value="false" control={<Radio />} label="Cliente Recorrente" />
                                 </RadioGroup>
                             </Grid>
                         </Grid>
@@ -245,43 +325,42 @@ export default function Cadastro() {
                             margin="normal"
                             value={formData.valor}
                             onChange={handleInputChange}
-                            required // Make valor required
+                            required
                         />
                         <Grid>
                             <Autocomplete
-                            options={payment}
-                            renderInput={(params) => <TextField name="pagamento" {...params} label="Método" variant="outlined" />}
-                            value={formData.pagamento || []}
-                            onChange={handlePaymentChange}
-                            isOptionEqualToValue={(option, value) => option === value}
-                            fullWidth
-                            margin="normal"
-                                required // Make payment required
+                                options={payment}
+                                renderInput={(params) => <TextField name="pagamento" {...params} label="Método" variant="outlined" />}
+                                value={formData.pagamento || []}
+                                onChange={handlePaymentChange}
+                                isOptionEqualToValue={(option, value) => option === value}
+                                fullWidth
+                                margin="normal"
+                                required
                             />
                         </Grid>
-                        
-                     
                         <Grid>
                             <Autocomplete
-                            multiple
-                            options={discount}
-                            renderInput={(params) => <TextField name="desconto" {...params} label="Desconto" variant="outlined" />}
-                            value={formData.desconto || []}
-                            onChange={handleDiscountChange}
-                            isOptionEqualToValue={(option, value) => option === value}
-                            fullWidth
-                            margin="normal"
-                            required         
+                                multiple
+                                options={discount}
+                                renderInput={(params) => <TextField name="desconto" {...params} label="Desconto" variant="outlined" />}
+                                value={formData.desconto || []}
+                                onChange={handleDiscountChange}
+                                isOptionEqualToValue={(option, value) => option === value}
+                                fullWidth
+                                margin="normal"
+                                required
                             />
-                            </Grid>
-                        <Button type="submit" variant="contained" color="primary">
-                            Enviar
-                        </Button>
+                        </Grid>
+                        <Grid container justifyContent="center">
+                            <Button type="submit" variant="contained" color="primary">
+                                {isLoading ? <CircularProgress size={24} color="inherit" /> : "Enviar"}
+                            </Button>
+                        </Grid>
                     </form>
                 </Paper>
             </Grid>
-           
-             <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={12}lg={12}>
                 <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
                     <div style={{ textAlign: 'center', overflowX: 'auto' }}>
                         <p>Últimos Cadastros</p>
@@ -289,23 +368,24 @@ export default function Cadastro() {
                             <thead>
                                 <tr>
                                     <th>Data</th>
-                                    <th>Serviço</th>
-                                    <th>Profissional</th>
-                                    {/* <th>Descrição</th> */}
-                                    <th>Valor</th>
-                                    <th>Pagamento</th>
-                                    <th>Desconto</th>
                                     <th>Nome</th>
                                     <th>Sobrenome</th>
                                     <th>Nova</th>
-                                  
+                                    <th>Serviço</th>
+                                    <th>Profissional</th>
+                                    <th>Valor</th>
+                                    <th>Pagamento</th>
+                                    <th>Desconto</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {dataList.slice(-5).map((data, index) => (
                                     <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
-                                        <td>{data.data}</td>
+                                        <td>{formatDate(data.data)}</td>
+                                          <td>{data.nome}</td>
+                                        <td>{data.sobrenome}</td>
+                                        <td>{data.novo ? 'Sim' : 'Não'}</td>
                                         <td>
                                             {data.categorias.map((categoria, index) => (
                                                 <span key={index} style={{ marginRight: '5px' }}>{categoria + ','}</span>
@@ -316,21 +396,14 @@ export default function Cadastro() {
                                                 <span key={index} style={{ marginRight: '5px' }}>{especialista + ','}</span>
                                             ))}
                                         </td>
-                                        {/* <td>{data.descricao}</td> */}
                                         <td>{data.valor}</td>
-                                          <td>
-                                            {data.pagamento}
-                                        </td>
-                                            <td>
+                                        <td>{data.pagamento}</td>
+                                        <td>
                                             {data.desconto.map((desconto, index) => (
                                                 <span key={index} style={{ marginRight: '5px' }}>{desconto + ','}</span>
                                             ))}
                                         </td>
-                                        <td>{data.nome}</td>
-                                        <td>{data.sobrenome}</td>
-                                        <td>{data.novo}</td>
-                                     
-                                        
+                                      
                                         <td>
                                             <Button onClick={() => handleEdit(index)}>Editar</Button>
                                             <Button onClick={() => handleDelete(index)}>Deletar</Button>
@@ -342,18 +415,44 @@ export default function Cadastro() {
                     </div>
                 </Paper>
             </Grid>
+            <Dialog open={isNewClient} onClose={() => setIsNewClient(false)}>
+                <DialogTitle>Novo Cliente</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        name="telefone"
+                        label="Telefone"
+                        variant="outlined"
+                        value={additionalFormData.telefone}
+                        onChange={handleAdditionalInputChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="email"
+                        label="Email"
+                        variant="outlined"
+                        value={additionalFormData.email}
+                        onChange={handleAdditionalInputChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        name="dataNascimento"
+                        label="Data de Nascimento"
+                        type="date"
+                        variant="outlined"
+                        value={additionalFormData.dataNascimento}
+                        onChange={handleAdditionalInputChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsNewClient(false)}>Cancelar</Button>
+                    <Button onClick={handleClientSubmit} color="primary">Enviar</Button>
+                </DialogActions>
+            </Dialog>
         </Grid>
     );
 }
-
-// TO BE DONE
-//ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
-//PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
-// BOTOES DELETAR E EDITAR NAO FUNCIONAM DE FATO
-//CAMPO OPÇÃO PAGAMENTO - DINHEIRO/CARTAO
-
-// DONE DONE DONE DONE BELLOW
-//CRIAR MAIS 2 CAMPOS CLIENTE: NOVO RADIO BUTTON E
-//PRESENTE, PROMOCIONAL, 10%, 5%,
-
 
