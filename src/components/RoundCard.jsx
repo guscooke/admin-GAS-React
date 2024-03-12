@@ -1,6 +1,6 @@
 import { Grid, Box, Typography, Divider } from '@mui/material';
 
-const DisplayView = ({ title, value, color, icon }) => {
+const Roundcard = ({ title, value, color, icon }) => {
   return (
     <Grid item xs={12} sm={6} md={4} lg={8}>
       <Box
@@ -18,18 +18,18 @@ const DisplayView = ({ title, value, color, icon }) => {
           boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
           transition: 'background-color 0.3s ease',
           '&:hover': {
-            bgcolor: '#4CAF50',
+            bgcolor: '#fdd835',
           },
         }}
       >
         <Box sx={{ fontSize: '2rem', fontWeight: 'bold' }}>
-          {icon}{value}
+          {value}
         </Box>
-        <Divider sx={{ width: '100%', backgroundColor: '#fff' }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#fdd835' }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#000' }}>
           {title}
-        </Typography>
-        {/* <Box
+              </Typography>
+         <Divider sx={{ width: '100%', backgroundColor: '#fff' }} />
+        <Box
           sx={{
             display: 'flex',
             justifyContent: 'center',
@@ -41,11 +41,10 @@ const DisplayView = ({ title, value, color, icon }) => {
           }}
         >
           {icon}
-        </Box> */}
+        </Box>
       </Box>
     </Grid>
   );
 };
 
-export default DisplayView;
-
+export default Roundcard;

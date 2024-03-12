@@ -24,7 +24,7 @@ function Navbar({ setCurrentPage }) {
           </MenuItem>
           <MenuItem value="monitor">Dashboard</MenuItem>
           <MenuItem value="cadastro">Cadastrar-serviço</MenuItem>
-          <MenuItem value="cadastro">Cadastrar-cliente</MenuItem>
+          {/* <MenuItem value="cadastro">Cadastrar-cliente</MenuItem> */}
           <MenuItem value="agenda">ver-Agenda</MenuItem>
           <MenuItem value="cadastroview">Ver-Serviços</MenuItem>
         </Select>

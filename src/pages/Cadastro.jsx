@@ -1,6 +1,7 @@
 // TO BE DONE
 //PRECISO CRIAR OUTRO COMPONENTE PARA RENDERIZAR OS SERVIÇO DO GOOGLE PARA O REACT
 // BOTOES DELETAR E EDITAR NAO FUNCIONAM DE FATO
+// CLIENTES NOVA A DATA ESTA DANDO ERRADA COM O ANO 1969
 
 // DONE DONE DONE DONE BELLOW
 //CRIAR MAIS 2 CAMPOS CLIENTE: NOVO RADIO BUTTON E
@@ -9,18 +10,24 @@
 //ATUALIZAR CONFORME APERTO O SUBMIT OU SEJA O MONITOR TD ATUALIZA
 import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+// import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import Paper from '@mui/material/Paper';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import Fab from '@mui/material/Fab';
+// import NavigationIcon from '@mui/icons-material/Navigation';
+import Stack from '@mui/material/Stack';
+// import AdapterDateFns from '@mui/lab/AdapterDateFns';
+// import LocalizationProvider from '@mui/lab/LocalizationProvider';
+// import DatePicker from '@mui/lab/DatePicker';
+// import { DatePicker } from '@mui/x-date-pickers'
+import TextField from '@mui/material/TextField';
+
 
 export default function Cadastro() {
     const initialFormData = {
@@ -37,6 +44,8 @@ export default function Cadastro() {
     };
 
     const initialAdditionalFormData = {
+        nome: '',
+        sobrenome:'',
         telefone: '',
         email: '',
         dataNascimento: '',
@@ -49,6 +58,7 @@ export default function Cadastro() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isNewClient, setIsNewClient] = useState(false);
+    const [isUltimosCadastros, setUlitmosCadastros] = useState(false);
 
     useEffect(() => {
         const storedDataList = localStorage.getItem('dataList');
@@ -84,17 +94,6 @@ export default function Cadastro() {
         setFormData({ ...formData, pagamento: newValue });
     };
 
-    const handleRadioChange = (event) => {
-        const isClientNew = event.target.value === 'true';
-        setFormData({
-            ...formData,
-            novo: isClientNew
-        });
-        if (isClientNew) {
-            setIsNewClient(true);
-        }
-    };
-
     const handleAdditionalInputChange = (event) => {
         const { name, value } = event.target;
         setAdditionalFormData(prevData => ({
@@ -102,17 +101,17 @@ export default function Cadastro() {
             [name]: value
         }));
     };
-
+////helper///
   const handleClientSubmit = async () => {
     if (!isNewClient || isLoading) return;
 
     try {
         const clientData = {
-            nome: formData.nome,
-            sobrenome: formData.sobrenome,
+            nome: additionalFormData.nome,
+            sobrenome: additionalFormData.sobrenome,
             telefone: additionalFormData.telefone,
             email: additionalFormData.email,
-            dataNascimento: additionalFormData.dataNascimento
+            dataNascimento:formatDate(additionalFormData.dataNascimento)
         };
 
         const server = google.script.run.withSuccessHandler(() => {
@@ -136,7 +135,7 @@ export default function Cadastro() {
 
     const formatDate = (date) => {
         const [year, month, day] = date.split('-');
-        return `${day}/${month}/${year.slice(-2)}`;
+        return `${day}/${month}/${year}`;
     };
 
     const handleSubmit = async (event) => {
@@ -193,7 +192,12 @@ export default function Cadastro() {
         'Micro Sobrancelha',
         'Microagulhamento',
         'Manutenção Extensão',
-        'Retoque Micro'
+        'Retoque Micro',
+        'Delíneado',
+        'Hidragloss',
+        'Hidraface',
+        'Combo Hidraface',
+        'Combo Hidragloss'
     ];
 
     const specialists = [
@@ -222,12 +226,14 @@ export default function Cadastro() {
 
     return (
         <Grid container justifyContent="center" spacing={2}>
+         
             <Grid item xs={12} sm={6}>
                 <Paper elevation={3} style={{ padding: '20px', marginBottom: '20px', backgroundColor: '#f0f0f0' }}>
                     <form className="form" onSubmit={handleSubmit}>
+
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
-                                <TextField
+                                 <TextField
                                     name="data"
                                     label=""
                                     type="date"
@@ -237,6 +243,13 @@ export default function Cadastro() {
                                     fullWidth
                                     margin="normal"
                                 />
+                                    {/* <DatePicker
+        label="Data"
+        value={formData.data}
+        onChange={handleInputChange}
+        renderInput={(params) => <TextField {...params} />}
+        inputFormat="dd/MM/yyyy"
+      /> */}
                             </Grid>
                         </Grid>
                         <Grid container spacing={2}>
@@ -293,19 +306,7 @@ export default function Cadastro() {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid container spacing={2}>
-                            <Grid item xs={6}>
-                                <RadioGroup
-                                    aria-label="novo"
-                                    name="novo"
-                                    value={formData.novo.toString()}
-                                    onChange={handleRadioChange}
-                                >
-                                    <FormControlLabel value="true" control={<Radio />} label="Cliente Nova" />
-                                    <FormControlLabel value="false" control={<Radio />} label="Cliente Recorrente" />
-                                </RadioGroup>
-                            </Grid>
-                        </Grid>
+                  
                         <TextField
                             name="descricao"
                             label="Descrição"
@@ -360,64 +361,54 @@ export default function Cadastro() {
                     </form>
                 </Paper>
             </Grid>
-            <Grid item xs={12} sm={12}lg={12}>
-                <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
-                    <div style={{ textAlign: 'center', overflowX: 'auto' }}>
-                        <p>Últimos Cadastros</p>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'small' }}>
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Nome</th>
-                                    <th>Sobrenome</th>
-                                    <th>Nova</th>
-                                    <th>Serviço</th>
-                                    <th>Profissional</th>
-                                    <th>Valor</th>
-                                    <th>Pagamento</th>
-                                    <th>Desconto</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {dataList.slice(-5).map((data, index) => (
-                                    <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
-                                        <td>{formatDate(data.data)}</td>
-                                          <td>{data.nome}</td>
-                                        <td>{data.sobrenome}</td>
-                                        <td>{data.novo ? 'Sim' : 'Não'}</td>
-                                        <td>
-                                            {data.categorias.map((categoria, index) => (
-                                                <span key={index} style={{ marginRight: '5px' }}>{categoria + ','}</span>
-                                            ))}
-                                        </td>
-                                        <td>
-                                            {data.especialista.map((especialista, index) => (
-                                                <span key={index} style={{ marginRight: '5px' }}>{especialista + ','}</span>
-                                            ))}
-                                        </td>
-                                        <td>{data.valor}</td>
-                                        <td>{data.pagamento}</td>
-                                        <td>
-                                            {data.desconto.map((desconto, index) => (
-                                                <span key={index} style={{ marginRight: '5px' }}>{desconto + ','}</span>
-                                            ))}
-                                        </td>
-                                      
-                                        <td>
-                                            <Button onClick={() => handleEdit(index)}>Editar</Button>
-                                            <Button onClick={() => handleDelete(index)}>Deletar</Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Paper>
+            <Grid item xs={12} sm={6}>
+                {/* BTN FOR OPEN FORM AND CADASTRADOS DIALOG */}
+            <Stack direction="row" justifyItems={'center'} spacing={1}>
+                    <Fab
+                        variant="extended" size="medium" color="primary"
+                        onClick={() => setIsNewClient(prevState => !prevState)}
+                    >
+                        Cliente Nova
+                        </Fab>
+                    <Fab
+                        variant="extended" size="medium" color="primary"
+                    onClick={() => setUlitmosCadastros(prevState => !prevState)}
+                    >
+                        Cadastradas
+                        </Fab>
+                    
+                    </Stack>
             </Grid>
+          {/* CLIENTE NOVO DIALOG */}
             <Dialog open={isNewClient} onClose={() => setIsNewClient(false)}>
                 <DialogTitle>Novo Cliente</DialogTitle>
                 <DialogContent>
+                     <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <TextField
+                                    name="nome"
+                                    label="Nome"
+                                    variant="outlined"
+                                    value={additionalFormData.nome}
+                                    onChange={handleAdditionalInputChange}
+                                    fullWidth
+                                    margin="normal"
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    name="sobrenome"
+                                    label="Sobrenome"
+                                    variant="outlined"
+                                    value={additionalFormData.sobrenome}
+                                    onChange={handleAdditionalInputChange}
+                                    fullWidth
+                                    margin="normal"
+                                    required
+                                />
+                            </Grid>
+                        </Grid>
                     <TextField
                         name="telefone"
                         label="Telefone"
@@ -438,7 +429,7 @@ export default function Cadastro() {
                     />
                     <TextField
                         name="dataNascimento"
-                        label="Data de Nascimento"
+                        label=""
                         type="date"
                         variant="outlined"
                         value={additionalFormData.dataNascimento}
@@ -449,8 +440,72 @@ export default function Cadastro() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setIsNewClient(false)}>Cancelar</Button>
-                    <Button onClick={handleClientSubmit} color="primary">Enviar</Button>
+                    <Button onClick={handleClientSubmit} color="primary">
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Enviar"}
+                    </Button>
                 </DialogActions>
+            </Dialog>
+            {/* ////////////////////////ultimos cadastros- DIALOG////////////////////////////// */}
+
+            <Dialog
+                fullScreen
+                open={isUltimosCadastros}
+                onClose={() => setUlitmosCadastros(false)}>
+                    <Paper elevation={3} style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
+                        <div style={{ textAlign: 'center', overflowX: 'auto' }}>
+                            <p>Últimos Cadastros</p>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'small' }}>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Nome</th>
+                                        <th>Sobrenome</th>
+                                        <th>Nova</th>
+                                        <th>Serviço</th>
+                                        <th>Profissional</th>
+                                        <th>Valor</th>
+                                        <th>Pagamento</th>
+                                        <th>Desconto</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dataList.slice(-5).map((data, index) => (
+                                        <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                            <td>{formatDate(data.data)}</td>
+                                            <td>{data.nome}</td>
+                                            <td>{data.sobrenome}</td>
+                                            <td>{data.novo ? 'Sim' : 'Não'}</td>
+                                            <td>
+                                                {data.categorias.map((categoria, index) => (
+                                                    <span key={index} style={{ marginRight: '5px' }}>{categoria + ','}</span>
+                                                ))}
+                                            </td>
+                                            <td>
+                                                {data.especialista.map((especialista, index) => (
+                                                    <span key={index} style={{ marginRight: '5px' }}>{especialista + ','}</span>
+                                                ))}
+                                            </td>
+                                            <td>{data.valor}</td>
+                                            <td>{data.pagamento}</td>
+                                            <td>
+                                                {data.desconto.map((desconto, index) => (
+                                                    <span key={index} style={{ marginRight: '5px' }}>{desconto + ','}</span>
+                                                ))}
+                                            </td>
+                                            <td>
+                                                <Button onClick={() => handleEdit(index)}>Editar</Button>
+                                                <Button onClick={() => handleDelete(index)}>Deletar</Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                        </table>
+                            <Button variant="outlined" onClick={() => setUlitmosCadastros(false)}>
+                                fechar
+                            </Button>
+                        </div>
+                    </Paper>
             </Dialog>
         </Grid>
     );
